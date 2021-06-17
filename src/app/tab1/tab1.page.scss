@@ -1,0 +1,33 @@
+:host {
+    ion-card {
+        ion-card-content {
+            .buttons {
+                width: 100%;
+                display: flex;
+                justify-content: space-evenly;
+
+                .button {
+                    flex: 1 0 0px;
+                }
+            }
+
+            .range-items {
+                display: flex;
+                align-items: center;
+
+                .left {
+                    flex: 0 0 0px;
+                }
+
+                .center {
+                    flex: 1 0 0px;
+                }
+
+                .right {
+                    flex: 0 0 25px;
+                    text-align: center;
+                }
+            }
+        }
+    }
+}

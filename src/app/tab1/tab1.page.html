@@ -1,17 +1,65 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Tab 1
+      Playlist
     </ion-title>
+    <ion-title size="small" slot="secondary">ID {{ socket.roomId }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button>
+        New Ride
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 1</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-card>
+    <ion-card-content>
+      <div class="range-items">
+        <div class="left">
+          <ion-button size="small" (click)="toggleLock()">
+            <ion-icon name="{{ !locked ? 'lock-open-outline' : 'lock-closed-outline' }}"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="center">
+          <ion-range min="0" max="100" step="1"  [(ngModel)]="volume" (ionChange)="volumeUpdate($event)"></ion-range>
+        </div>
+        <div class="right">
+          {{ volume }}
+        </div>
+      </div>
+      
 
-  <app-explore-container name="Tab 1 page"></app-explore-container>
+      <div class="buttons">
+        <div class="button">
+          <ion-button expand="block" (click)="music.togglePlaying()">
+            <ion-icon name="play-outline" *ngIf="!music.playing"></ion-icon>
+            <ion-icon name="pause-outline" *ngIf="music.playing"></ion-icon>
+          </ion-button>
+        </div>
+        <div class="button">
+          <ion-button expand="block">
+            <ion-icon name="play-forward-outline"></ion-icon>
+          </ion-button>
+        </div>        
+      </div>
+    </ion-card-content>
+  </ion-card>
+
+  <div class="playlist">
+
+    <ng-container *ngFor="let song of music.playlist">
+      <ion-item (click)="music.startSong(song)">
+        <ion-thumbnail slot="start">
+          <img [src]="music.url + 'thumbnails/' + song.video_id">
+        </ion-thumbnail>
+        <ion-label class="ion-text-wrap">
+          <h2>{{ song.title }}</h2>
+          <p>{{ song.artist }}</p>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+
+  </div>
 </ion-content>

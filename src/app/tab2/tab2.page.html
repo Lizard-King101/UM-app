@@ -1,17 +1,43 @@
 <ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>
-      Tab 2
-    </ion-title>
-  </ion-toolbar>
+    <ion-toolbar>
+        <ion-title>
+            Search
+        </ion-title>
+        
+    </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Tab 2</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
-  <app-explore-container name="Tab 2 page"></app-explore-container>
+    <div class="content">
+        <form action="" (submit)="submitSearch()">
+            <ion-item>
+                <ion-input type="text" name="query" [(ngModel)]="query"></ion-input>
+                <ion-button type="submit">
+                    <ion-icon name="search-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+            </ion-item>
+        </form>
+    
+        <div class="search-content">
+            <ion-item *ngFor="let result of results">
+                <ion-thumbnail slot="start">
+                    <img [src]="result.snippet.thumbnails.medium.url">
+                  </ion-thumbnail>
+                  <ion-label class="ion-text-wrap">
+                    <h2 [innerHTML]="result.snippet.title"></h2>
+                  </ion-label>
+                  <ion-button fill="outline">
+                    <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+                  </ion-button>
+            </ion-item>
+        
+            <div class="foot-content">
+                <div class="spinner-box" *ngIf="searching">
+                    <ion-spinner name="crescent" ></ion-spinner>
+                </div>
+            
+                <ion-button expand="block" *ngIf="results.length && !searching && nextPageToken" (click)="loadMore()">Load More</ion-button>
+            </div>
+        </div>
+    </div>
 </ion-content>
