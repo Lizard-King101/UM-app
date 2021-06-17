@@ -1,6 +1,31 @@
 :host {
     ion-card {
         ion-card-content {
+            .title-album {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+
+                .album {
+                    width: 15rem;
+                    height: 15rem;
+                    position: relative;
+
+                    img {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+
+                        object-fit: cover;
+                    }
+                }
+                
+                h2 {
+                    margin: 10px 0px;
+                }
+            }
+
             .buttons {
                 width: 100%;
                 display: flex;

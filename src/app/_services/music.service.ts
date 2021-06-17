@@ -13,8 +13,7 @@ export class MusicService {
     private mobile: boolean = false;
     public loadingSong: boolean = false;
 
-     playlist: (Song|ClientList)[] = [];
-     clientSongs: Song[] = [];
+    private playlist: Song[] = [];
 
     private webAudio: HTMLAudioElement;
 
@@ -46,7 +45,7 @@ export class MusicService {
         @Inject(DOCUMENT) private document: Document
     ) {
         this.mobile = this.platform.is('capacitor');
-        this.url = environment.production ? 'https://api.multihosts.net/' : 'http://localhost:3000/';
+        this.url = environment.socket;
         this.loadPlaylist();
     }
 
@@ -54,7 +53,7 @@ export class MusicService {
         this.http.post(this.url + 'get-playlist', {}).subscribe((data: Song[]) => {
             console.log(data);
             this.playlist = data;
-        })
+        });
     }
 
     togglePlaying() {
@@ -70,10 +69,30 @@ export class MusicService {
         else this.startWebSong();
     }
 
+    playNext() {
+        console.log(this.playlist);
+        
+        if(!this.song) {
+            this.startSong(this.playlist[0])
+        } else {
+            for(let i = 0; i < this.playlist.length; i ++) {
+                let song = this.playlist[i];
+                if(song.video_id == this.song.video_id) {
+                    if(this.playlist[i + 1]) {
+                        this.startSong(this.playlist[i + 1]);
+                    } else {
+                        this.startSong(this.playlist[0]);
+                    }
+                    return;
+                }
+            }
+        }
+    }
+
     setVolume(volume?: number) {
         let vol = volume ? volume : this.settings.volume;
         if(this.mobile) {
-
+            this.nativeAudio.setVolumeForComplexAsset(this.song.video_id, vol / 100);
         } else if (this.webAudio){
             this.webAudio.volume = vol / 100;
         }
@@ -81,7 +100,7 @@ export class MusicService {
 
     playSong() {
         if(!this.song) {
-            this.startSong(this.playlist[0].hasOwnProperty('clientlist') ? <Song>this.playlist[1] : <Song>this.playlist[0]);
+            this.startSong(this.playlist[0]);
         } else {
             if(this.mobile) {
                 this.nativeAudio.play(this.song.video_id);
@@ -89,6 +108,7 @@ export class MusicService {
                 this.webAudio.play();
             }
             this.playing = true;
+            this.sendStatus()
         }
     }
 
@@ -99,6 +119,7 @@ export class MusicService {
             this.webAudio.pause();
         }
         this.playing = false;
+        this.sendStatus()
     }
 
     unloadSong() {
@@ -107,8 +128,9 @@ export class MusicService {
     }
 
     private startMobileSong() {
-        this.nativeAudio.preloadSimple(this.song.video_id, this.url + 'music/' + this.song.video_id).then(() => {
+        this.nativeAudio.preloadComplex(this.song.video_id, this.url + 'music/' + this.song.video_id, this.settings.volume / 100, 1, 0).then(() => {
             this.nativeAudio.play(this.song.video_id);
+            this.sendStatus();
         });
     }
 
@@ -117,7 +139,12 @@ export class MusicService {
         this.webAudio.addEventListener('loadeddata', () => {
 
             this.webAudio.play();
+            this.sendStatus();
         });
+        this.webAudio.addEventListener('ended', (ev) => {
+            this.playNext();
+        })
+        this.webAudio.setAttribute('preload', 'auto')
         this.webAudio.volume = this.settings.volume / 100;
         this.document.body.appendChild(this.webAudio);
         this.webAudio.src = this.url + 'music/' + this.song.video_id;
@@ -140,8 +167,5 @@ interface Song {
     client: boolean;
     added: Date;
     last_played: Date;
-}
-
-interface ClientList {
-    clientlist: boolean;
+    requested?: boolean;
 }
