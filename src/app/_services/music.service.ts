@@ -14,6 +14,7 @@ export class MusicService {
     public loadingSong: boolean = false;
 
     private playlist: Song[] = [];
+    private clientSongs: Song[] = [];
 
     private webAudio: HTMLAudioElement;
 
@@ -47,6 +48,10 @@ export class MusicService {
         this.mobile = this.platform.is('capacitor');
         this.url = environment.socket;
         this.loadPlaylist();
+
+        socket.io.on('client-request', (song: Song) => {
+            
+        })
     }
 
     loadPlaylist() {
