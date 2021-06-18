@@ -15,8 +15,10 @@ export class SocketService {
         
         this.io.on('room-id', (id: string) => {
             this.roomId = id.toUpperCase();
-            console.log('ROOM', id);
-            
+        });
+
+        this.io.on('new-ride-start', (id: string) => {
+            this.roomId = id.toUpperCase();
         })
     }
 

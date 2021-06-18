@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
+import { ToastController } from '@ionic/angular';
 import { SearchService } from '../_services/search.service';
 import { SocketService } from '../_services/socket.service';
+import { MusicService, Song } from '../_services/music.service';
 
 @Component({
     selector: 'app-tab2',
@@ -13,8 +15,40 @@ export class Tab2Page {
     searching: boolean = false;
     results: any[] = [];
     nextPageToken: string;
-    constructor(private yt: SearchService, private socket: SocketService) {
-        
+    constructor(private yt: SearchService, private socket: SocketService, public toastController: ToastController, private music: MusicService) {
+        socket.io.on('song-progress', (data: {id: string, percent?: number}) => {
+            this.results.forEach((result) => {
+                if(result.id.videoId == data.id) {
+                    result.adding = true;
+                    if(data.percent) result.percent = data.percent;
+                }
+            })
+        });
+
+        socket.io.on('song-error', (data: {id: string, message: string, error: string, details: any}) => {
+            console.log('FFMPEG ERROR: ', data.error, data.details);
+            
+            this.toastController.create({
+                message: data.message,
+                duration: 2000,
+                buttons: ['OK']
+            }).then((toast) => {toast.present()});
+            this.results.forEach((result) => {
+                if(result.id.videoId == data.id) {
+                    result.adding = false;
+                }
+            })
+        });
+
+        socket.io.on('song-downloaded', (song: Song) => {
+            this.music.appendSong(song);
+            this.results.forEach((result) => {
+                if(result.id.videoId == song.video_id) {
+                    result.adding = false;
+                    result.complete = true;
+                }
+            });
+        })
     }
 
     submitSearch() {
@@ -38,6 +72,11 @@ export class Tab2Page {
             this.results = this.results.concat(data.items);
             this.nextPageToken = data.nextPageToken ? data.nextPageToken : undefined;
         })
+    }
+
+    onDownload(id: string) {
+        console.log(id);
+        this.socket.io.emit('download-song', id)
     }
 
 }

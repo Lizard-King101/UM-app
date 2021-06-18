@@ -17,7 +17,7 @@ export class MusicService {
 
     private webAudio: HTMLAudioElement;
 
-    private _song: Song;
+    private _song?: Song;
     get song() {
         return this._song;
     }
@@ -36,6 +36,27 @@ export class MusicService {
         this.sendStatus();
     }
 
+    private _volLock: boolean = false;
+    get locked() {
+        return this._volLock;
+    }
+
+    set locked(lock: boolean) {
+        this._volLock = lock;
+        this.socket.io.emit('set-lock', lock);
+    }
+
+    private _volume: number = 30;
+    get volume() {
+        return this._volume;
+    }
+
+    set volume(vol: number) {
+        this._volume = vol;
+        this.socket.io.emit('volume', vol);
+        this.setVolume(vol);
+    }
+
     constructor(
         private platform: Platform, 
         private socket: SocketService, 
@@ -46,7 +67,92 @@ export class MusicService {
     ) {
         this.mobile = this.platform.is('capacitor');
         this.url = environment.socket;
+        this.volume = settings.volume;
         this.loadPlaylist();
+
+        this.socket.io.on('status', (status: Status) => {
+            if(status.emitter && status.emitter == this.socket.io.id) return;
+            if(status.playing != this.playing) {
+                this._playing = status.playing;
+                if(status.playing) {
+                    this.playSong(false);
+                } else {
+                    this.pauseSong(false);
+                }
+            }
+        });
+
+        this.socket.io.on('set-volume', (setVol: SetVolume) => {
+            if(setVol.emitter && setVol.emitter == this.socket.io.id) return;
+            if(setVol.locked != undefined) this._volLock = setVol.locked;
+            this._volume = setVol.volume;
+
+            this.setVolume(this.volume);
+        })
+
+        this.socket.io.on('requested-song', (song: Song) => {
+            console.log('REQUESTED SONG', song);
+            
+            if(this.playing || this.song != undefined) {
+                console.log('PLAYING OR SONG');
+                
+                for(let i = 0; i < this.playlist.length; i++) {
+                    let s = this.playlist[i];
+                    if(s.video_id == this.song.video_id) {
+                        console.log('INSERT AT ' + (i + 1));
+                        
+                        this.playlist.splice(i + 1, 0, song);
+                        if(!this.playing) this.startSong(song);
+                        return;
+                    }
+                }
+            } else {
+                this.playlist.unshift(song);
+                this.startSong(song);
+            }
+        })
+
+        this.socket.io.on('play-next', () => {
+            this.playNext()
+        });
+
+        this.socket.io.on('play-song', (song: Song) => {
+            let found = false;
+            for(let i = 0; i < this.playlist.length; i++) {
+                let s = this.playlist[i];
+                if(s.video_id == song.video_id) {
+                    this.startSong(s);
+                    found = true;
+                    continue;
+                }
+            }
+            if(!found) {
+                if(this.song != undefined) {
+                    for(let i = 0; i < this.playlist.length; i ++) {
+                        let s = this.playlist[i];
+                        if(s.video_id == this.song.video_id) {
+                            this.playlist.splice(i + 1, 0, song);
+                            return;
+                        }
+                    }
+                } else {
+                    this.playlist.unshift(song);
+                    this.startSong(song);
+                }
+            }
+        });
+
+        this.socket.io.on('new-ride-start', () => {
+            console.log(this.playlist);
+        });
+
+        this.socket.io.on('room-id', () => {
+            if(!this.playlist.length) this.loadPlaylist();
+        })
+
+        this.socket.io.on('song-complete')
+
+        this.socket.io.emit('get-volume');
     }
 
     loadPlaylist() {
@@ -67,11 +173,10 @@ export class MusicService {
         this.playing = true;
         if(this.mobile) this.startMobileSong();
         else this.startWebSong();
+        this.sendStatus();
     }
 
     playNext() {
-        console.log(this.playlist);
-        
         if(!this.song) {
             this.startSong(this.playlist[0])
         } else {
@@ -98,7 +203,7 @@ export class MusicService {
         }
     }
 
-    playSong() {
+    playSong(send: boolean = true) {
         if(!this.song) {
             this.startSong(this.playlist[0]);
         } else {
@@ -107,19 +212,23 @@ export class MusicService {
             } else {
                 this.webAudio.play();
             }
-            this.playing = true;
-            this.sendStatus()
+            this._playing = true;
+            if(send) this.sendStatus()
         }
     }
 
-    pauseSong() {
+    pauseSong(send: boolean = true) {
         if(this.mobile) {
             this.nativeAudio.stop(this.song.video_id);
         } else {
             this.webAudio.pause();
         }
-        this.playing = false;
-        this.sendStatus()
+        this._playing = false;
+        if(send) this.sendStatus()
+    }
+
+    appendSong(song: Song) {
+        this.playlist.push(song);
     }
 
     unloadSong() {
@@ -158,7 +267,19 @@ export class MusicService {
     }
 }
 
-interface Song {
+interface SetVolume {
+    volume: number;
+    locked: boolean;
+    emitter?: string;
+}
+
+interface Status {
+    song?: Song;
+    playing: boolean;
+    emitter?: string;
+}
+
+export interface Song {
     id: number;
     video_id: string;
     title: string;

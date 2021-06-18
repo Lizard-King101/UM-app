@@ -3,8 +3,11 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  socket: 'http://localhost:3100/'
+  // production: false,
+  // socket: 'http://localhost:3100/'
+
+  production: true,
+  socket: 'https://api.multihosts.net/'
 };
 
 /*
