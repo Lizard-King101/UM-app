@@ -4,10 +4,41 @@
         flex-direction: column;
         height: 100%;
 
+        .search-box {
+            display: flex;
+            flex-direction: row;
+            border-bottom: 2px solid var(--ion-search-border, #a7a7a7);
+
+            input {
+                flex: 1 0 0px;
+                padding: 9px 15px 9px 10px;
+                font-size: 1.2rem;
+                outline: unset;
+                border: unset;
+                background-color: var(--ion-search-background, #ececec);
+                color: var(--ion-search-text, rgb(22, 22, 22));
+
+                &::placeholder {
+                    color: var(--ion-search-placeholder, --ion-color-primary)
+                }
+
+                &:focus {
+                    outline: unset;
+                }
+            }
+
+            button {
+                flex: 0 0 44px;
+                background-color: var(--ion-color-primary);
+                font-size: 1.2rem;
+                color: #fff;
+            }
+        }
+
         .search-content {
             flex: 1 0 0px;
             overflow-y: auto;
-
+            padding-top: 10px;
 
             .foot-content {
                 width: 100%;

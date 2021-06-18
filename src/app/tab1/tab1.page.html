@@ -5,7 +5,7 @@
         </ion-title>
         <ion-title size="small" slot="secondary">ID {{ socket.roomId }}</ion-title>
         <ion-buttons slot="end">
-            <ion-button>
+            <ion-button (click)="startNewRide()">
                 New Ride
                 <ion-icon name="refresh-outline" slot="start"></ion-icon>
             </ion-button>
@@ -27,14 +27,14 @@
             <div class="range-items">
                 <div class="left">
                     <ion-button size="small" (click)="toggleLock()">
-                        <ion-icon name="{{ !locked ? 'lock-open-outline' : 'lock-closed-outline' }}"></ion-icon>
+                        <ion-icon name="{{ !music.locked ? 'lock-open-outline' : 'lock-closed-outline' }}"></ion-icon>
                     </ion-button>
                 </div>
                 <div class="center">
-                    <ion-range min="0" max="100" step="1" [(ngModel)]="volume" (ionChange)="volumeUpdate($event)"></ion-range>
+                    <ion-range min="0" max="100" step="1" [(ngModel)]="music.volume" (ionChange)="volumeUpdate($event)"></ion-range>
                 </div>
                 <div class="right">
-                    {{ volume }}
+                    {{ music.volume }}
                 </div>
             </div>
 

@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
 import { MusicService } from './_services/music.service';
 import { SettingsService } from './_services/settings.service';
 import { SocketService } from './_services/socket.service';
@@ -14,9 +14,24 @@ export class AppComponent {
         private settings: SettingsService, 
         private socket: SocketService, 
         private loading: LoadingController,
-        private music: MusicService
+        private music: MusicService,
     ) {
-        let io = this.socket.io;
+
+        if(!this.socket.connected) {
+            this.loading.create({
+                message: 'Reconnecting',
+            }).then((toast) => {
+                this.connecting = toast;
+                this.connecting.present();
+            })
+
+            setTimeout(() => {
+                if(this.socket.connected && this.connecting != undefined) {
+                    this.connecting.dismiss();
+                    this.connecting = undefined;
+                }
+            }, 1000)
+        }
 
         this.socket.io.on('request-auth', () => {
             if(this.connecting != undefined) {

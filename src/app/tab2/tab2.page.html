@@ -10,12 +10,12 @@
 <ion-content [fullscreen]="true">
     <div class="content">
         <form action="" (submit)="submitSearch()">
-            <ion-item>
-                <ion-input type="text" name="query" [(ngModel)]="query"></ion-input>
-                <ion-button type="submit">
+            <div class="search-box">
+                <input type="text" placeholder="Search" name="query" [(ngModel)]="query" autocomplete="off">
+                <button type="submit">
                     <ion-icon name="search-outline" slot="icon-only"></ion-icon>
-                </ion-button>
-            </ion-item>
+                </button>
+            </div>
         </form>
     
         <div class="search-content">
@@ -26,8 +26,10 @@
                   <ion-label class="ion-text-wrap">
                     <h2 [innerHTML]="result.snippet.title"></h2>
                   </ion-label>
-                  <ion-button fill="outline">
-                    <ion-icon name="add-outline" slot="icon-only"></ion-icon>
+                  <ion-spinner name="crescent" *ngIf="result.adding && !result.complete"></ion-spinner>
+                  <ion-icon name="checkmark-outline" *ngIf="result.complete"></ion-icon>
+                  <ion-button fill="outline" (click)="onDownload(result.id.videoId)" *ngIf="!result.adding && !result.complete">
+                    <ion-icon name="add-outline"></ion-icon>
                   </ion-button>
             </ion-item>
         

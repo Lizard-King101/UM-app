@@ -89,6 +89,14 @@ body.dark {
   --ion-color-step-850: #cecece;
   --ion-color-step-600: #e2e2e2;
   --ion-card-background: #313335;
+  --ion-color-step-50: #313335;
+  --ion-search-background: #313335;
+  --ion-search-border: #6338ff;
+  --ion-search-placeholder: #cecece;
+  --ion-search-text: #fff;
+  ion-toast {
+    --color: #fff;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
