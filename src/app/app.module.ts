@@ -2,7 +2,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
-import { NativeAudio } from '@ionic-native/native-audio/ngx';
+import { StreamingMedia } from '@ionic-native/streaming-media/ngx';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
@@ -17,8 +17,8 @@ import { SocketService } from './_services/socket.service';
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
-    BrowserModule, 
-    IonicModule.forRoot(), 
+    BrowserModule,
+    IonicModule.forRoot(),
     HttpClientModule,
     AppRoutingModule],
   providers: [
@@ -27,7 +27,7 @@ import { SocketService } from './_services/socket.service';
     SettingsService,
     SearchService,
     MusicService,
-    NativeAudio
+    StreamingMedia
   ],
   bootstrap: [AppComponent],
 })

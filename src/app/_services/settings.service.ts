@@ -16,7 +16,7 @@ export class SettingsService {
         this.saveSettings();
     }
     get theme(): 'light' | 'dark' {
-        return this.settings.theme;
+        return this.settings ? this.settings.theme : DefaultSettings.theme;
     }
 
     set volume(volume: number) {
@@ -24,20 +24,21 @@ export class SettingsService {
         this.saveSettings();
     }
     get volume(): number {
-        return this.settings.volume;
+        return this.settings ? this.settings.volume : DefaultSettings.volume;
     }
 
     constructor(@Inject(DOCUMENT) private document: Document) {
-        this.settings = JSON.parse(localStorage.getItem('settings'));
-        if(!this.settings) {
-            this.settings = DefaultSettings;
-        } else {
-            this.theme = this.settings.theme;
+        this.settings = DefaultSettings;
+        const settings = JSON.parse(localStorage.getItem('settings'));
+        console.log(this.settings);
+        if(settings != null) {
+            this.theme = settings.theme;
+            this.volume = settings.volume;
         }
     }
 
     setTheme(theme: 'light' | 'dark') {
-        if(theme == 'dark') {
+        if(theme === 'dark') {
             this.document.body.classList.add('dark');
         } else {
             this.document.body.classList.remove('dark');
@@ -51,5 +52,5 @@ export class SettingsService {
 
 interface Settings {
     theme: 'light' | 'dark';
-    volume: number
+    volume: number;
 }

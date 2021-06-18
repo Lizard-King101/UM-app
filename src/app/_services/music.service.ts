@@ -1,17 +1,19 @@
 import { Inject, Injectable } from "@angular/core";
 import { Platform } from "@ionic/angular";
 import { SocketService } from "./socket.service";
-import { NativeAudio } from '@ionic-native/native-audio/ngx';
 import { environment } from "../../environments/environment";
 import { DOCUMENT } from "@angular/common";
 import { HttpClient } from "@angular/common/http";
 import { SettingsService } from "./settings.service";
+import { StreamingMedia } from "@ionic-native/streaming-media/ngx";
+import { Subject } from "rxjs";
 
 @Injectable()
-export class MusicService {
+export class MusicService{
+    public loadingSong = false;
     public url: string;
-    private mobile: boolean = false;
-    public loadingSong: boolean = false;
+    private events: any = {};
+    private mobile = false;
 
     private playlist: Song[] = [];
     private clientSongs: Song[] = [];
@@ -59,23 +61,18 @@ export class MusicService {
     }
 
     constructor(
-        private platform: Platform, 
-        private socket: SocketService, 
-        private nativeAudio: NativeAudio,
+        private platform: Platform,
+        private socket: SocketService,
         private settings: SettingsService,
-        private http: HttpClient, 
+        private http: HttpClient,
+        private stream: StreamingMedia,
         @Inject(DOCUMENT) private document: Document
     ) {
-        this.mobile = this.platform.is('capacitor');
+        // this.mobile = this.platform.is('capacitor');
         this.url = environment.socket;
         this.volume = settings.volume;
         this.loadPlaylist();
 
-<<<<<<< HEAD
-        socket.io.on('client-request', (song: Song) => {
-            
-        })
-=======
         this.socket.io.on('status', (status: Status) => {
             if(status.emitter && status.emitter == this.socket.io.id) return;
             if(status.playing != this.playing) {
@@ -152,14 +149,14 @@ export class MusicService {
             console.log(this.playlist);
         });
 
-        this.socket.io.on('room-id', () => {
+        this.socket.io.on('room-id', (id: string) => {
             if(!this.playlist.length) this.loadPlaylist();
+            this.emit('new-room', id);
         })
 
         this.socket.io.on('song-complete')
 
         this.socket.io.emit('get-volume');
->>>>>>> e6f0aa5a2a94c9e75b1039c6b45ef488fb4a4aa5
     }
 
     loadPlaylist() {
@@ -181,6 +178,7 @@ export class MusicService {
         if(this.mobile) this.startMobileSong();
         else this.startWebSong();
         this.sendStatus();
+        this.emit('start-song', song);
     }
 
     playNext() {
@@ -204,7 +202,7 @@ export class MusicService {
     setVolume(volume?: number) {
         let vol = volume ? volume : this.settings.volume;
         if(this.mobile) {
-            this.nativeAudio.setVolumeForComplexAsset(this.song.video_id, vol / 100);
+            // if(this.song !== undefined) this.nativeAudio.setVolumeForComplexAsset(this.song.video_id, vol / 100);
         } else if (this.webAudio){
             this.webAudio.volume = vol / 100;
         }
@@ -215,23 +213,27 @@ export class MusicService {
             this.startSong(this.playlist[0]);
         } else {
             if(this.mobile) {
-                this.nativeAudio.play(this.song.video_id);
+                // this.nativeAudio.play(this.song.video_id);
+                this.stream.resumeAudio();
             } else {
                 this.webAudio.play();
             }
+            this.emit('play-song');
             this._playing = true;
-            if(send) this.sendStatus()
+            if(send) this.sendStatus();
         }
     }
 
     pauseSong(send: boolean = true) {
         if(this.mobile) {
-            this.nativeAudio.stop(this.song.video_id);
+            // this.nativeAudio.stop(this.song.video_id);
+            this.stream.pauseAudio();
         } else {
             this.webAudio.pause();
         }
         this._playing = false;
-        if(send) this.sendStatus()
+        this.emit('pause-song');
+        if(send) this.sendStatus();
     }
 
     appendSong(song: Song) {
@@ -239,21 +241,54 @@ export class MusicService {
     }
 
     unloadSong() {
-        if(this.mobile) this.nativeAudio.unload(this.song.video_id);
+        if(this.mobile && this.song !== undefined) {
+            // this.nativeAudio.unload(this.song.video_id);
+            this.stream.stopAudio();
+        }
         else if(this.webAudio) this.webAudio.remove();
     }
 
+    sendStatus() {
+        this.socket.io.emit('set-status', {
+            song: this.song,
+            playing: this.playing
+        })
+    }
+
+    on(event: string) {
+        const sub = new Subject();
+        if (this.events[event] && this.events[event].length) {
+            this.events[event].push(sub);
+        } else { this.events[event] = [sub]; }
+        return sub;
+    }
+
+    emit(event: string, data?: any) {
+        if (this.events[event]) {
+            for (const ev of this.events[event]) {
+                ev.next(data);
+            }
+        }
+    }
+
     private startMobileSong() {
-        this.nativeAudio.preloadComplex(this.song.video_id, this.url + 'music/' + this.song.video_id, this.settings.volume / 100, 1, 0).then(() => {
-            this.nativeAudio.play(this.song.video_id);
-            this.sendStatus();
+        console.log('MOBILE PLAY', this.song);
+
+        this.stream.playAudio(this.url + 'music/' + this.song.video_id + '.mp3', {
+            bgImage: this.url + 'thumbnails/' + this.song.video_id,
+            keepAwake: true,
+            successCallback: () => {
+                this.playNext();
+            },
+            errorCallback: (err) => {
+                console.log('Stream Error', err);
+            }
         });
     }
 
     private startWebSong() {
         this.webAudio = this.document.createElement('audio');
         this.webAudio.addEventListener('loadeddata', () => {
-
             this.webAudio.play();
             this.sendStatus();
         });
@@ -266,12 +301,7 @@ export class MusicService {
         this.webAudio.src = this.url + 'music/' + this.song.video_id;
     }
 
-    sendStatus() {
-        this.socket.io.emit('set-status', {
-            song: this.song,
-            playing: this.playing
-        })
-    }
+    
 }
 
 interface SetVolume {

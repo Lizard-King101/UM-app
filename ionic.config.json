@@ -1,5 +1,7 @@
 {
   "name": "uber-music",
-  "integrations": {},
+  "integrations": {
+    "capacitor": {}
+  },
   "type": "angular"
 }

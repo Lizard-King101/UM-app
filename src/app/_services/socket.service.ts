@@ -7,7 +7,7 @@ export class SocketService {
     connected: boolean = false;
 
     public io;
-    public roomId;
+    public roomId = '';
 
     constructor(){
         this.io = io(environment.socket);
@@ -19,7 +19,7 @@ export class SocketService {
 
         this.io.on('new-ride-start', (id: string) => {
             this.roomId = id.toUpperCase();
-        })
+        });
     }
 
 }
