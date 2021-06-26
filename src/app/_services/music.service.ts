@@ -160,7 +160,9 @@ export class MusicService{
     }
 
     loadPlaylist() {
-        this.http.post(this.url + 'get-playlist', {}).subscribe((data: Song[]) => {
+        this.http.post(this.url + 'get-playlist', {
+            filters: this.settings.filters ? this.settings.filters : {}
+        }).subscribe((data: Song[]) => {
             console.log(data);
             this.playlist = data;
         });
@@ -173,6 +175,9 @@ export class MusicService{
 
     startSong(song: Song) {
         this.unloadSong();
+        if(!song.tagArr) {
+            song.tagArr = song.tags === '' ? [] : song.tags.split(',');
+        }
         this.song = song;
         this.playing = true;
         if(this.mobile) this.startMobileSong();
@@ -252,7 +257,20 @@ export class MusicService{
         this.socket.io.emit('set-status', {
             song: this.song,
             playing: this.playing
-        })
+        });
+    }
+
+    findSong(id: string): Song | false {
+        if(this.playlist.length) {
+            for(const song of this.playlist) {
+                if(song.video_id === id) {
+                    return song;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 
     on(event: string) {
@@ -295,13 +313,11 @@ export class MusicService{
         this.webAudio.addEventListener('ended', (ev) => {
             this.playNext();
         })
-        this.webAudio.setAttribute('preload', 'auto')
+        this.webAudio.setAttribute('preload', 'auto');
         this.webAudio.volume = this.settings.volume / 100;
         this.document.body.appendChild(this.webAudio);
         this.webAudio.src = this.url + 'music/' + this.song.video_id;
     }
-
-    
 }
 
 interface SetVolume {
@@ -321,7 +337,8 @@ export interface Song {
     video_id: string;
     title: string;
     artist: string;
-    tags: string;
+    tags?: string;
+    tagArr?: string[];
     client: boolean;
     added: Date;
     last_played: Date;

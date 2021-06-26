@@ -3,12 +3,12 @@ import { Inject, Injectable } from "@angular/core";
 
 const DefaultSettings: Settings = {
     theme: 'light',
-    volume: 30
-}
+    volume: 30,
+    filters: {}
+};
 
 @Injectable()
 export class SettingsService {
-    private settings: Settings;
 
     set theme(theme: 'light' | 'dark') {
         this.settings.theme = theme;
@@ -27,6 +27,9 @@ export class SettingsService {
         return this.settings ? this.settings.volume : DefaultSettings.volume;
     }
 
+    filters: any = {};
+
+    private settings: Settings;
     constructor(@Inject(DOCUMENT) private document: Document) {
         this.settings = DefaultSettings;
         const settings = JSON.parse(localStorage.getItem('settings'));
@@ -34,6 +37,7 @@ export class SettingsService {
         if(settings != null) {
             this.theme = settings.theme;
             this.volume = settings.volume;
+            this.filters = settings.filters ? settings.filters : {};
         }
     }
 
@@ -46,6 +50,7 @@ export class SettingsService {
     }
 
     saveSettings() {
+        this.settings.filters = this.filters;
         localStorage.setItem('settings', JSON.stringify(this.settings));
     }
 }
@@ -53,4 +58,7 @@ export class SettingsService {
 interface Settings {
     theme: 'light' | 'dark';
     volume: number;
+    filters: {
+        [key: string]: boolean;
+    };
 }

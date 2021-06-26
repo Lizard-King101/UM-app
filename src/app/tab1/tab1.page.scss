@@ -1,3 +1,32 @@
+@-webkit-keyframes rotating /* Safari and Chrome */ {
+    from {
+        -webkit-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    to {
+        -webkit-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+  @keyframes rotating {
+    from {
+        -ms-transform: rotate(0deg);
+        -moz-transform: rotate(0deg);
+        -webkit-transform: rotate(0deg);
+        -o-transform: rotate(0deg);
+        transform: rotate(0deg);
+    }
+    to {
+        -ms-transform: rotate(360deg);
+        -moz-transform: rotate(360deg);
+        -webkit-transform: rotate(360deg);
+        -o-transform: rotate(360deg);
+        transform: rotate(360deg);
+    }
+}
+
 :host {
     ion-card {
         ion-card-content {
@@ -13,6 +42,18 @@
                     position: relative;
                     border-radius: 5px;
                     overflow: hidden;
+
+                    button {
+                        position: absolute;
+                        top: 15px;
+                        left: 15px;
+                        border: unset;
+                        background-color: rgba(0,0,0,0.5);
+                        font-size: 1.8rem;
+                        color: white;
+                        padding: 5px 7px;
+                        border-radius: 6px;
+                    }
 
                     img {
                         position: absolute;
@@ -53,6 +94,40 @@
                 .right {
                     flex: 0 0 25px;
                     text-align: center;
+                }
+            }
+        }
+    }
+
+    .filters {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 0px 15px;
+        margin-bottom: 10px;
+    }
+
+    .playlist {
+        ion-item.active {
+            --ion-item-background: #4b4b4b;
+            img {
+                border-radius: 100%;
+            }
+
+            &.playing {
+                ion-thumbnail {
+                    img {
+                        border-radius: 100%;
+                        animation: rotating 4s linear infinite;
+                    }
+                }
+            }
+        }
+
+        ion-item-options {
+            ion-item-option {
+                ion-icon {
+                    font-size: 1.4rem;
                 }
             }
         }

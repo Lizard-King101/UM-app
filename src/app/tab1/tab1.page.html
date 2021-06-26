@@ -16,10 +16,13 @@
 <ion-content [fullscreen]="true">
     <ion-card>
         <ion-card-content>
-
+            
             <div class="title-album">
                 <div class="album">
-                    <img [src]="music.song ? music.url + 'thumbnails/' + music.song.video_id : settings.theme == 'light' ? 'assets/no_cover_light.jpg' : 'assets/no_cover_dark.jpg'" alt="">
+                    <img [src]="music.song ? music.url + 'thumbnails/' + music.song.video_id : settings.theme === 'light' ? 'assets/no_cover_light.jpg' : 'assets/no_cover_dark.jpg'" alt="">
+                    <button (click)="toggleTag('favorite', music.song.video_id)" *ngIf="music.song !== undefined">
+                        <ion-icon [name]="music.song.tagArr.includes('favorite') ? 'star' : 'star-outline'"></ion-icon>
+                    </button>
                 </div>
                 <h2>{{ music.song ? music.song.title : '' }}</h2>
             </div>
@@ -42,30 +45,50 @@
             <div class="buttons">
                 <div class="button">
                     <ion-button expand="block" (click)="music.togglePlaying()">
-                        <ion-icon name="play-outline" *ngIf="!music.playing"></ion-icon>
-                        <ion-icon name="pause-outline" *ngIf="music.playing"></ion-icon>
+                        <ion-icon name="play" *ngIf="!music.playing"></ion-icon>
+                        <ion-icon name="pause" *ngIf="music.playing"></ion-icon>
                     </ion-button>
                 </div>
                 <div class="button">
                     <ion-button expand="block" (click)="music.playNext()">
-                        <ion-icon name="play-forward-outline"></ion-icon>
+                        <ion-icon name="play-forward"></ion-icon>
                     </ion-button>
                 </div>
             </div>
         </ion-card-content>
     </ion-card>
 
+    <div class="filters">
+        <ion-button fill="clear" (click)="music.loadPlaylist()">
+            <ion-icon name="refresh" slot="start"></ion-icon>
+            Refresh
+        </ion-button>
+
+        <ion-button (click)="openFilters()">
+            Fillters
+            <ion-icon name="filter" slot="end"></ion-icon>
+        </ion-button>
+    </div>
+
     <div class="playlist">
         <ng-container *ngFor="let song of music.playlist">
-            <ion-item (click)="music.startSong(song)">
-                <ion-thumbnail slot="start">
-                    <img [src]="music.url + 'thumbnails/' + song.video_id">
-                </ion-thumbnail>
-                <ion-label class="ion-text-wrap">
-                    <h2>{{ song.title }}</h2>
-                    <p>{{ song.artist }}</p>
-                </ion-label>
-            </ion-item>
+            <ion-item-sliding>
+                <ion-item (click)="music.startSong(song)" [ngClass]="{'active': music.song === song, 'playing': music.song === song && music.playing}">
+                    <ion-thumbnail slot="start">
+                        <img [src]="music.url + 'thumbnails/' + song.video_id">
+                    </ion-thumbnail>
+                    <ion-label class="ion-text-wrap">
+                        <h2>{{ song.title }}</h2>
+                        <p>{{ song.artist }}</p>
+                    </ion-label>
+                </ion-item>
+
+                <ion-item-options side="end">
+                    <ion-item-option (click)="toggleTag('hidden', song.video_id)">
+                        <ion-icon [name]="song.tagArr.includes('hidden') ? 'eye-off' : 'eye'"></ion-icon>
+                    </ion-item-option>
+                  </ion-item-options>
+            </ion-item-sliding>
         </ng-container>
     </div>
 </ion-content>

@@ -36,6 +36,7 @@ export class AppComponent {
                         id: this.notCounter,
                         title: `${this.socket.roomId}`,
                         body: '',
+                        sound: 'silent.wav',
                         schedule: {
                             on: {second: 5},
                             count: 1
@@ -87,6 +88,7 @@ export class AppComponent {
                                 id: 0,
                                 title: `${this.socket.roomId} ${song.artist}`,
                                 body: `${song.title}`,
+                                sound: 'silent.wav',
                                 attachments: [
                                     {
                                         id: song.video_id,
@@ -99,20 +101,20 @@ export class AppComponent {
                 });
             }
 
-            if(!this.socket.connected) {
-                this.loading.create({
-                    message: 'Reconnecting',
-                }).then((toast) => {
-                    this.connecting = toast;
-                    this.connecting.present();
-                });
-                setTimeout(() => {
-                    if(this.socket.connected && this.connecting !== undefined) {
-                        this.connecting.dismiss();
-                        this.connecting = undefined;
-                    }
-                }, 1000);
-            }
+            // if(!this.socket.connected) {
+            //     this.loading.create({
+            //         message: 'Reconnecting',
+            //     }).then((toast) => {
+            //         this.connecting = toast;
+            //         this.connecting.present();
+            //         setTimeout(() => {
+            //             if(this.socket.connected && this.connecting !== undefined) {
+            //                 this.connecting.dismiss();
+            //                 this.connecting = undefined;
+            //             }
+            //         }, 1000);
+            //     });
+            // }
         });
 
 
@@ -126,17 +128,17 @@ export class AppComponent {
             });
         });
 
-        this.socket.io.on('disconnect', async () => {
-            this.socket.connected = false;
-            this.connecting = await this.loading.create({
-                message: 'Reconnecting',
-            });
-            this.connecting.present();
-            setTimeout(() => {
-                this.socket.io.emit('auth', {
-                    admin: true
-                });
-            }, 1000);
-        });
+        // this.socket.io.on('disconnect', async () => {
+        //     this.socket.connected = false;
+        //     this.connecting = await this.loading.create({
+        //         message: 'Reconnecting',
+        //     });
+        //     this.connecting.present();
+        //     setTimeout(() => {
+        //         this.socket.io.emit('auth', {
+        //             admin: true
+        //         });
+        //     }, 1000);
+        // });
     }
 }

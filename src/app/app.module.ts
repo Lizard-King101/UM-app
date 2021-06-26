@@ -8,14 +8,20 @@ import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { FiltersComponent } from './filters/filters.component';
 import { MusicService } from './_services/music.service';
 import { SearchService } from './_services/search.service';
 import { SettingsService } from './_services/settings.service';
 import { SocketService } from './_services/socket.service';
 
 @NgModule({
-  declarations: [AppComponent],
-  entryComponents: [],
+  declarations: [
+    AppComponent,
+    FiltersComponent
+  ],
+  entryComponents: [
+    FiltersComponent
+  ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(),
