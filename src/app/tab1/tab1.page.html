@@ -13,52 +13,63 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-    <ion-card>
-        <ion-card-content>
-            
-            <div class="title-album">
-                <div class="album">
-                    <img [src]="music.song ? music.url + 'thumbnails/' + music.song.video_id : settings.theme === 'light' ? 'assets/no_cover_light.jpg' : 'assets/no_cover_dark.jpg'" alt="">
-                    <button (click)="toggleTag('favorite', music.song.video_id)" *ngIf="music.song !== undefined">
-                        <ion-icon [name]="music.song.tagArr.includes('favorite') ? 'star' : 'star-outline'"></ion-icon>
-                    </button>
-                </div>
-                <h2>{{ music.song ? music.song.title : '' }}</h2>
-            </div>
+<ion-content [fullscreen]="true" [scrollEvents]="true" (ionScroll)="scroll($event)">
+    <div class="fade">
+        <ion-card>
+            <ion-card-content>
+                
+                <div class="title-album" [ngClass]="{'small': scrolled}">
+                    <div class="album">
+                        <img [src]="music.song ? music.url + 'thumbnails/' + music.song.video_id : settings.theme === 'light' ? 'assets/no_cover_light.jpg' : 'assets/no_cover_dark.jpg'" alt="">
+                        <button (click)="toggleTag('favorite', music.song.video_id)" *ngIf="music.song !== undefined">
+                            <ion-icon [name]="music.song.tagArr.includes('favorite') ? 'star' : 'star-outline'"></ion-icon>
+                        </button>
+                    </div>
+                    <h2 *ngIf="music.song">
+                        <span *ngIf="scrolled">
+                            {{ music.song.title }}
+                        </span>
 
-            <div class="range-items">
-                <div class="left">
-                    <ion-button size="small" (click)="toggleLock()">
-                        <ion-icon name="{{ !music.locked ? 'lock-open-outline' : 'lock-closed-outline' }}"></ion-icon>
-                    </ion-button>
+                        <ng-container *ngIf="!scrolled">
+                            {{ music.song.title }}
+                        </ng-container>
+                    </h2>
                 </div>
-                <div class="center">
-                    <ion-range min="0" max="100" step="1" [(ngModel)]="music.volume" (ionChange)="volumeUpdate($event)"></ion-range>
+    
+                <div class="range-items">
+                    <div class="left">
+                        <ion-button size="small" (click)="toggleLock()">
+                            <ion-icon name="{{ !music.locked ? 'lock-open-outline' : 'lock-closed-outline' }}"></ion-icon>
+                        </ion-button>
+                    </div>
+                    <div class="center">
+                        <ion-range min="0" max="100" step="1" [(ngModel)]="music.volume" (ionChange)="volumeUpdate($event)"></ion-range>
+                    </div>
+                    <div class="right">
+                        {{ music.volume }}
+                    </div>
                 </div>
-                <div class="right">
-                    {{ music.volume }}
+    
+    
+                <div class="buttons">
+                    <div class="button">
+                        <ion-button expand="block" (click)="music.togglePlaying()">
+                            <ion-icon name="play" *ngIf="!music.playing"></ion-icon>
+                            <ion-icon name="pause" *ngIf="music.playing"></ion-icon>
+                        </ion-button>
+                    </div>
+                    <div class="button">
+                        <ion-button expand="block" (click)="music.playNext()">
+                            <ion-icon name="play-forward"></ion-icon>
+                        </ion-button>
+                    </div>
                 </div>
-            </div>
+            </ion-card-content>
+        </ion-card>
+    
+    </div>
 
-
-            <div class="buttons">
-                <div class="button">
-                    <ion-button expand="block" (click)="music.togglePlaying()">
-                        <ion-icon name="play" *ngIf="!music.playing"></ion-icon>
-                        <ion-icon name="pause" *ngIf="music.playing"></ion-icon>
-                    </ion-button>
-                </div>
-                <div class="button">
-                    <ion-button expand="block" (click)="music.playNext()">
-                        <ion-icon name="play-forward"></ion-icon>
-                    </ion-button>
-                </div>
-            </div>
-        </ion-card-content>
-    </ion-card>
-
-    <div class="filters">
+    <div class="filters" [ngClass]="{'min-margin': scrolled}">
         <ion-button fill="clear" (click)="music.loadPlaylist()">
             <ion-icon name="refresh" slot="start"></ion-icon>
             Refresh

@@ -14,6 +14,7 @@ import { SocketService } from '../_services/socket.service';
 })
 export class Tab1Page {
     private url = environment.socket;
+    scrolled: boolean = false;
 
     constructor(
         private socket: SocketService,
@@ -72,5 +73,13 @@ export class Tab1Page {
         }).then((modal) => {
             modal.present();
         });
+    }
+
+    scroll(ev: any) {
+        if(ev.detail.scrollTop <= 0) {
+            this.scrolled = false;
+        } else {
+            this.scrolled = true;
+        }
     }
 }
